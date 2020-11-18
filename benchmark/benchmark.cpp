@@ -117,20 +117,20 @@ static inline uint64_t getTimeInUs() {
 }
 
 std::vector<float> doBench(Model& model, int loop, int warmup = 10, int forward = MNN_FORWARD_CPU, bool only_inference = true,
-                           int numberThread = 4, int precision = 2) {
+                           int numberThread = 4, int precision = 2, int power = 0) {
     auto revertor = std::unique_ptr<Revert>(new Revert(model.model_file.c_str()));
     revertor->initialize();
     auto modelBuffer      = revertor->getBuffer();
     const auto bufferSize = revertor->getBufferSize();
     auto net = std::shared_ptr<MNN::Interpreter>(MNN::Interpreter::createFromBuffer(modelBuffer, bufferSize));
     revertor.reset();
-    net->setSessionMode(MNN::Interpreter::Session_Release);
     MNN::ScheduleConfig config;
     config.numThread = numberThread;
     config.type      = static_cast<MNNForwardType>(forward);
     MNN::BackendConfig backendConfig;
     backendConfig.precision = (MNN::BackendConfig::PrecisionMode)precision;
-    backendConfig.power = MNN::BackendConfig::Power_High;
+//    backendConfig.power = MNN::BackendConfig::Power_High;
+    backendConfig.power = (MNN::BackendConfig::PowerMode)power;
     config.backendConfig = &backendConfig;
 
     std::vector<float> costs;
@@ -171,14 +171,20 @@ std::vector<float> doBench(Model& model, int loop, int warmup = 10, int forward 
 
 void displayStats(const std::string& name, const std::vector<float>& costs) {
     float max = 0, min = FLT_MAX, sum = 0, avg;
+    std::vector<float> med_vector;
     for (auto v : costs) {
         max = fmax(max, v);
         min = fmin(min, v);
         sum += v;
+        med_vector.push_back(v);
         //printf("[ - ] cost：%f ms\n", v);
     }
     avg = costs.size() > 0 ? sum / costs.size() : 0;
-    printf("[ - ] %-24s    max = %8.3fms  min = %8.3fms  avg = %8.3fms\n", name.c_str(), max, avg == 0 ? 0 : min, avg);
+
+    std::sort(med_vector.begin(), med_vector.end());
+    float median_val = med_vector[med_vector.size() / 2];
+
+    printf("[ - ] %-40s    max = %8.3fms  min = %8.3fms  avg = %8.3fms  median = %8.3fms \n", name.c_str(), max, avg == 0 ? 0 : min, avg, median_val);
 }
 static inline std::string forwardType(MNNForwardType type) {
     switch (type) {
@@ -375,7 +381,13 @@ int main(int argc, const char* argv[]) {
     if (argc >= 7) {
         precision = atoi(argv[6]);
     }
-    std::cout << "Forward type: **" << forwardType(forward) << "** thread=" << numberThread << "** precision=" <<precision << std::endl;
+
+    int power = 0;
+    if (argc >= 8) {
+        power = atoi(argv[7]);
+    }
+
+    std::cout << "Forward type: **" << forwardType(forward) << "** thread=" << numberThread << "** precision=" <<precision << "** power=" <<power << std::endl;
     std::vector<Model> models = findModelFiles(argv[1]);
 
     std::cout << "--------> Benchmarking... loop = " << argv[2] << ", warmup = " << warmup << std::endl;
@@ -384,7 +396,7 @@ int main(int argc, const char* argv[]) {
     // set_cpu_affinity();
     
     for (auto& m : models) {
-        std::vector<float> costs = doBench(m, loop, warmup, forward, false, numberThread, precision);
+        std::vector<float> costs = doBench(m, loop, warmup, forward, false, numberThread, precision,power);
         displayStats(m.name, costs);
     }
 }
