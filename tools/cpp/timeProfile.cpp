@@ -19,7 +19,7 @@
 #include <MNN/Tensor.hpp>
 #include "revertMNNModel.hpp"
 
-#define printf_TIME_BY_NAME
+#define MNN_PRINT_TIME_BY_NAME
 
 using namespace MNN;
 
@@ -118,7 +118,7 @@ int main(int argc, const char* argv[]) {
         outputTensor->copyToHostTensor(outputTensorUser.get());
     }
     
-#ifdef printf_TIME_BY_NAME
+#ifdef MNN_PRINT_TIME_BY_NAME
     profiler->printTimeByName(runTime);
 #endif
     profiler->printTimeByType(runTime);
