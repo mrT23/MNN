@@ -24,9 +24,8 @@ WORK_DIR=`pwd`
 ANDROID_NDK=/mnt/d/programms/android-ndk-r21d-linux-x86_64/android-ndk-r21d/
 BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/tests/outputs/mnn/fp32
 BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/outputs/comparison
-MODEL_NAME=ofa_oneplus8_15ms_ofa_2.0
+MODEL_NAME=ofa_oneplus8_15ms_ofa_2.0.mnn
 
-BENCHMARK_FILE_NAME=time_profile.txt
 ANDROID_DIR=/data/local/tmp
 ADB=/mnt/d/programms/fastboot_adb/adb.exe
 DEVICE_ID=QYJ7N17A10000471
@@ -62,25 +61,25 @@ function build_android_bench() {
       mkdir -p build_64
     fi
     cd $BUILD_DIR
-    cmake ../../ \
-          -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DANDROID_ABI="${ABI}" \
-          -DANDROID_STL=c++_static \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DANDROID_NATIVE_API_LEVEL=android-21  \
-          -DANDROID_TOOLCHAIN=clang \
-          -DMNN_VULKAN:BOOL=$VULKAN \
-          -DMNN_OPENCL:BOOL=$OPENCL \
-          -DMNN_OPENMP:BOOL=$OPENMP \
-          -DMNN_OPENGL:BOOL=$OPENGL \
-		  -DMNN_ARM82:BOOL=$ARM82 \
-          -DMNN_USE_THREAD_POOL=OFF \
-          -DMNN_DEBUG:BOOL=OFF \
-          -DMNN_BUILD_BENCHMARK:BOOL=ON \
-          -DMNN_BUILD_FOR_ANDROID_COMMAND=true \
-          -DNATIVE_LIBRARY_OUTPUT=.
-    make -j8 benchmark.out timeProfile.out
+    # cmake ../../ \
+          # -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+          # -DCMAKE_BUILD_TYPE=Release \
+          # -DANDROID_ABI="${ABI}" \
+          # -DANDROID_STL=c++_static \
+          # -DCMAKE_BUILD_TYPE=Release \
+          # -DANDROID_NATIVE_API_LEVEL=android-21  \
+          # -DANDROID_TOOLCHAIN=clang \
+          # -DMNN_VULKAN:BOOL=$VULKAN \
+          # -DMNN_OPENCL:BOOL=$OPENCL \
+          # -DMNN_OPENMP:BOOL=$OPENMP \
+          # -DMNN_OPENGL:BOOL=$OPENGL \
+		  # -DMNN_ARM82:BOOL=$ARM82 \
+          # -DMNN_USE_THREAD_POOL=OFF \
+          # -DMNN_DEBUG:BOOL=OFF \
+          # -DMNN_BUILD_BENCHMARK:BOOL=ON \
+          # -DMNN_BUILD_FOR_ANDROID_COMMAND=true \
+          # -DNATIVE_LIBRARY_OUTPUT=.
+    # make -j8 benchmark.out timeProfile.out
 }
 
 function bench_android() {
@@ -98,6 +97,8 @@ function bench_android() {
     $ADB -s $DEVICE_ID shell chmod 0777 $ANDROID_DIR/benchmark.out
 	$ADB -s $DEVICE_ID shell chmod 0777 $ANDROID_DIR/timeProfile.out
 	
+	BENCHMARK_FILE_NAME=time_profile_opencl.txt
+
     if [ "" != "$PUSH_MODEL" ]; then
         $ADB -s $DEVICE_ID shell "rm -rf $ANDROID_DIR/benchmark_models"
         $ADB -s $DEVICE_ID push $BENCHMARK_MODEL_DIR $ANDROID_DIR/benchmark_models
@@ -111,29 +112,26 @@ function bench_android() {
 	  echo "OpenCL"
       $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/$MODEL_NAME $RUN_LOOP 3 1x3x224x224 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
       $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
-      #benchmark  CPU 4 threds
-	  #echo "OpenCL"
-      #$ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/ofa_flops_389m_ofa_2.0.mnn 30 0 1x3x224x224 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
-      #$ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
-	  #echo "done"
-	  #sleep 10
-      #echo "CPU 4 threads"
-      #$ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models $RUN_LOOP 10 $FORWARD_TYPE 4 2 1 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
-      #sleep 10
-      #echo "CPU 1 threads"
-      #$ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models $RUN_LOOP 10 $FORWARD_TYPE 1 2 1 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
-      # echo "Vulkan"
-      #benchmark  Vulkan
-      # $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models $RUN_LOOP 10 7 4 2> $ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
-      #benchmark OpenGL
-      # $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models $RUN_LOOP 10 6 4 2 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
-#      benchmark OpenCL
-
-      $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME_OPENCL
-	  $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME_CPU
-
+      $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
     fi
 
+	BENCHMARK_FILE_NAME=time_profile_cpu_1_thread.txt
+
+    if [ "" != "$PUSH_MODEL" ]; then
+        $ADB -s $DEVICE_ID shell "rm -rf $ANDROID_DIR/benchmark_models"
+        $ADB -s $DEVICE_ID push $BENCHMARK_MODEL_DIR $ANDROID_DIR/benchmark_models
+    fi
+    if [ "$BIN" != "create_lut.out" ]; then
+      echo $BENCHMARK_FILE_NAME
+      $ADB -s $DEVICE_ID shell "rm -f $ANDROID_DIR/$BENCHMARK_FILE_NAME"
+      $ADB -s $DEVICE_ID shell "echo >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
+      $ADB -s $DEVICE_ID shell "echo Build Flags: ABI=$ABI  OpenMP=$OPENMP Vulkan=$VULKAN OpenCL=$OPENCL >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
+
+	  echo "OpenCL"
+      $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/$MODEL_NAME $RUN_LOOP 0 1x3x224x224 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
+      $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
+      $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
+    fi
 
 
 }
