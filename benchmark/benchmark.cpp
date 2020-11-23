@@ -184,7 +184,8 @@ void displayStats(const std::string& name, const std::vector<float>& costs) {
     std::sort(med_vector.begin(), med_vector.end());
     float median_val = med_vector[med_vector.size() / 2];
 
-    printf("[ - ] %-40s    max = %8.3fms  min = %8.3fms  avg = %8.3fms  median = %8.3fms \n", name.c_str(), max, avg == 0 ? 0 : min, avg, median_val);
+    //printf("[ - ] %-40s    max = %8.3fms  min = %8.3fms  avg = %8.3fms  median = %8.3fms \n", name.c_str(), max, avg == 0 ? 0 : min, avg, median_val);
+	printf("[ - ] %-45s   median = %8.3fms \n", name.c_str(), median_val);
 }
 static inline std::string forwardType(MNNForwardType type) {
     switch (type) {
