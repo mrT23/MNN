@@ -119,7 +119,7 @@ void Profiler::end(const OperatorInfo* info) {
 
 static void printTable(const char* title, const std::vector<std::string>& header,
                        const std::vector<std::vector<std::string>>& data) {
-    MNN_PRINT("%s\n", title);
+    printf("%s\n", title);
 
     // calc column width
     std::vector<size_t> maxLength(header.size());
@@ -135,18 +135,18 @@ static void printTable(const char* title, const std::vector<std::string>& header
     for (int i = 0; i < header.size(); ++i) {
         auto expand = header[i];
         expand.resize(maxLength[i], ' ');
-        MNN_PRINT("%s\t", expand.c_str());
+        printf("%s\t", expand.c_str());
     }
-    MNN_PRINT("\n");
+    printf("\n");
     
     // print rows
     for (auto& row : data) {
         for (int i = 0; i < header.size(); ++i) {
             auto expand = row[i];
             expand.resize(maxLength[i], ' ');
-            MNN_PRINT("%s\t", expand.c_str());
+            printf("%s\t", expand.c_str());
         }
-        MNN_PRINT("\n");
+        printf("\n");
     }
 }
     
@@ -173,7 +173,7 @@ void Profiler::printTimeByType(int loops) {
     }
     printTable("Sort by time cost !", header, rows);
     float totalAvgTime = mTotalTime / (float)loops;
-    MNN_PRINT("total time : %f ms, total mflops : %f \n", totalAvgTime, mTotalMFlops / loops);
+    printf("total time : %f ms, total mflops : %f \n", totalAvgTime, mTotalMFlops / loops);
 }
 
 void Profiler::printTimeByName(int loops) {

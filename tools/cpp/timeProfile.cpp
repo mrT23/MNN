@@ -19,7 +19,7 @@
 #include <MNN/Tensor.hpp>
 #include "revertMNNModel.hpp"
 
-#define MNN_PRINT_TIME_BY_NAME
+#define printf_TIME_BY_NAME
 
 using namespace MNN;
 
@@ -61,9 +61,9 @@ int main(int argc, const char* argv[]) {
         }
     }
     for (auto dim : inputDims) {
-        MNN_PRINT("%d ", dim);
+        printf("%d ", dim);
     }
-    MNN_PRINT("\n");
+    printf("\n");
     
     // revert MNN model if necessary
     auto revertor = std::unique_ptr<Revert>(new Revert(fileName));
@@ -72,7 +72,7 @@ int main(int argc, const char* argv[]) {
     auto bufferSize  = revertor->getBufferSize();
     
     // create net
-    MNN_PRINT("Open Model %s\n", fileName);
+    printf("Open Model %s\n", fileName);
     auto net = std::shared_ptr<Interpreter>(Interpreter::createFromBuffer(modelBuffer, bufferSize));
     if (nullptr == net) {
         return 0;
@@ -118,7 +118,7 @@ int main(int argc, const char* argv[]) {
         outputTensor->copyToHostTensor(outputTensorUser.get());
     }
     
-#ifdef MNN_PRINT_TIME_BY_NAME
+#ifdef printf_TIME_BY_NAME
     profiler->printTimeByName(runTime);
 #endif
     profiler->printTimeByType(runTime);
