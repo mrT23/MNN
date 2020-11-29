@@ -21,8 +21,8 @@ BIN=benchmark.out
 WORK_DIR=`pwd`
 # BUILD_DIR=/Users/hussamlawen/work/MNN/project/android/build_64
 ANDROID_NDK=/mnt/d/programms/android-ndk-r21d-linux-x86_64/android-ndk-r21d/
-BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/tests/outputs/mnn/fp32
-BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/outputs/comparison
+BENCHMARK_MODEL_DIR=C:/Users/talri/Downloads/opset_models
+#BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/outputs/comparison
 
 BENCHMARK_FILE_NAME=benchmark.txt
 ANDROID_DIR=/data/local/tmp

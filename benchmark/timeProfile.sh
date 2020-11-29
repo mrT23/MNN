@@ -24,7 +24,8 @@ WORK_DIR=`pwd`
 ANDROID_NDK=/mnt/d/programms/android-ndk-r21d-linux-x86_64/android-ndk-r21d/
 BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/tests/outputs/mnn/fp32
 BENCHMARK_MODEL_DIR=C:/git/SesaMind-Train/outputs/comparison
-MODEL_NAME=ofa_oneplus8_15ms_ofa_2.0.mnn
+#MODEL_NAME=t_mobilenet_large_ofa_2.0.mnn
+MODEL_NAME=expanded_conv-in_channels_32-out_channels_48-expand_96-kernel_5-stride_2-idskip_0-se_1-hs_0-input_div_4.mnn
 
 ANDROID_DIR=/data/local/tmp
 ADB=/mnt/d/programms/fastboot_adb/adb.exe
@@ -110,7 +111,7 @@ function bench_android() {
       $ADB -s $DEVICE_ID shell "echo Build Flags: ABI=$ABI  OpenMP=$OPENMP Vulkan=$VULKAN OpenCL=$OPENCL >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
 
 	  echo "OpenCL"
-      $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/$MODEL_NAME $RUN_LOOP 3 1x3x224x224 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
+      $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/$MODEL_NAME $RUN_LOOP 3 1x32x56x56 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
       $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
       $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
     fi
@@ -128,7 +129,7 @@ function bench_android() {
       $ADB -s $DEVICE_ID shell "echo Build Flags: ABI=$ABI  OpenMP=$OPENMP Vulkan=$VULKAN OpenCL=$OPENCL >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
 
 	  echo "OpenCL"
-      $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/$MODEL_NAME $RUN_LOOP 0 1x3x224x224 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
+      $ADB -s $DEVICE_ID shell "LD_LIBRARY_PATH=$ANDROID_DIR $ANDROID_DIR/$BIN $ANDROID_DIR/benchmark_models/$MODEL_NAME $RUN_LOOP 0 >$ANDROID_DIR/benchmark.err >> $ANDROID_DIR/$BENCHMARK_FILE_NAME"
       $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
       $ADB -s $DEVICE_ID pull $ANDROID_DIR/$BENCHMARK_FILE_NAME
     fi
